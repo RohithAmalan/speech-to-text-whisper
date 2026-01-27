@@ -1,0 +1,22 @@
+# Phase 1: Speech-to-Text Foundation
+# Pure ASR dependencies - NO LLM libraries
+
+# Core ASR
+openai-whisper==20231117
+
+# Audio processing
+sounddevice==0.4.6
+numpy==1.24.3
+scipy==1.11.3
+
+# PyTorch (required by Whisper)
+torch==2.1.0
+torchaudio==2.1.0
+
+# Additional audio format support
+pydub==0.25.1
+ffmpeg-python==0.2.0
+
+# Development & testing
+pytest==7.4.3
+pytest-cov==4.1.0
