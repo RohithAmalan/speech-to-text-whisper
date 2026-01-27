@@ -22,7 +22,8 @@ print("✓ Model ready")
 
 def save_and_transcribe(audio, fs=Config.SAMPLE_RATE):
     if len(audio) == 0 or np.max(np.abs(audio)) < Config.SILENCE_THRESHOLD: 
-        return None, "Audio too quiet/empty"
+        print("⚠️  Audio too quiet/empty")
+        return None
     
     path = os.path.join(RECORDINGS_DIR, f"rec_{int(time.time())}.wav")
     wav.write(path, fs, audio)
@@ -78,6 +79,8 @@ def record_and_transcribe(duration=Config.DEFAULT_DURATION, mode="fixed", **kwar
         elif mode == "manual": audio = record_manual()
         elif mode == "auto": audio = record_auto(**kwargs)
         return save_and_transcribe(audio)
+    except KeyboardInterrupt:
+        raise  # Re-raise to let main.py handle exit
     except Exception as e: return f"Error: {e}"
 
 def transcribe_file(path):

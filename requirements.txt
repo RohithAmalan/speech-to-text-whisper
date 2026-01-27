@@ -20,3 +20,6 @@ ffmpeg-python==0.2.0
 # Development & testing
 pytest==7.4.3
 pytest-cov==4.1.0
+
+# LLM Client
+openai>=1.0.0
