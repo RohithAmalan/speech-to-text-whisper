@@ -25,11 +25,10 @@ def save_and_transcribe(audio, fs=Config.SAMPLE_RATE):
         print("⚠️  Audio too quiet/empty")
         return None
     
-    path = os.path.join(RECORDINGS_DIR, f"rec_{int(time.time())}.wav")
-    wav.write(path, fs, audio)
-    print(f"✓ Saved: {path}\nTranscribing...")
+    print("Transcribing (in-memory)...")
+    audio_flat = audio.flatten().astype(np.float32)
     
-    res = model.transcribe(path, fp16=False)
+    res = model.transcribe(audio_flat, fp16=False)
     print(f"Language: {res['language']}")
     return res["text"].strip()
 
@@ -51,10 +50,27 @@ def record_fixed(duration=Config.DEFAULT_DURATION):
     return rec
 
 def record_manual():
-    print("🎤 Press ENTER to start, thence ENTER to stop...")
+    print("🎤 Press ENTER to start...")
     input()
-    print("Recording... (ENTER to stop)")
-    return record_stream(lambda q, **k: input())
+    print("🎤 Recording... (Press ENTER to stop)")
+    
+    q = []
+    def cb(indata, f, t, s): q.append(indata.copy())
+    
+    # Start stream manually to ensure no context manager blocking issues
+    stream = sd.InputStream(samplerate=Config.SAMPLE_RATE, 
+                            channels=Config.CHANNELS, 
+                            callback=cb)
+    stream.start()
+    
+    try:
+        input() # Wait for stop signal
+    finally:
+        stream.stop()
+        stream.close()
+    
+    print("✓ Recording stopped")
+    return np.concatenate(q) if q else np.array([])
 
 def record_auto(silence_dur=Config.SILENCE_DURATION, 
                 threshold=Config.SILENCE_THRESHOLD, 

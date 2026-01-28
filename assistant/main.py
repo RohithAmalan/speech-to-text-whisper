@@ -23,7 +23,7 @@ def main():
             # We use "auto" mode for natural conversation
             print("\n------------------------------------------------")
             print("👂 Listening for speech...")
-            user_text = speech_to_text.record_and_transcribe(mode="auto")
+            user_text = speech_to_text.record_and_transcribe(mode="manual")
             
             if not user_text:
                 continue
@@ -43,6 +43,7 @@ def main():
 
     except KeyboardInterrupt:
         print("\n\n👋 Goodbye!")
+        sys.exit(0)
     except Exception as e:
         print(f"\n❌ Error: {e}")
 
