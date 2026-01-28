@@ -1,6 +1,6 @@
 
-import speech_to_text as module
-from speech_to_text import record_and_transcribe, transcribe_file
+import whisper_app.speech_to_text as module
+from whisper_app.speech_to_text import record_and_transcribe, transcribe_file
 import os
 
 

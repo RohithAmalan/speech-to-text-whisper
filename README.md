@@ -49,8 +49,8 @@ The assistant is split into three clean modules in the `assistant/` directory:
 ---
 
 ## 🎤 Sspeech-to-text-foundation/
-├── transcriber/speech_to_text.py      # Core ASR implementation
-├── transcriber/test_transcription.py  # Verification suite
+├── whisper_app/speech_to_text.py      # Core ASR implementation
+├── whisper_app/test_transcription.py  # Verification suite
 Convert human speech to accurate plain text using Whisper ASR.
 
 ### 🎯 Project Goals

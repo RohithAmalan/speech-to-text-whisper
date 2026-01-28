@@ -5,7 +5,7 @@ import time
 # Add project root to path so we can import 'whisper' module
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from transcriber import speech_to_text
+from whisper_app import speech_to_text
 import brain
 import speaker
 
