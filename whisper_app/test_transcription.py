@@ -1,6 +1,18 @@
 
-import whisper_app.speech_to_text as module
-from whisper_app.speech_to_text import record_and_transcribe, transcribe_file
+import sys
+import os
+
+# Add the project root to sys.path so we can import 'whisper_app'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+try:
+    # Try importing as if running from project root
+    import whisper_app.speech_to_text as module
+    from whisper_app.speech_to_text import record_and_transcribe, transcribe_file
+except ImportError:
+    # Fallback if running directly inside the folder
+    import speech_to_text as module
+    from speech_to_text import record_and_transcribe, transcribe_file
 import os
 
 
@@ -11,11 +23,11 @@ def run_tests():
     
     # Test 1: Microphone Recording
     print("\n[Test 1] Live Microphone Recording")
-    print("You will record for 3 seconds. Speak clearly.")
-    input("Press ENTER when ready...")
+    print("You will control when to start and stop.")
     
     try:
-        text = record_and_transcribe(duration=3)
+        # mode="manual" handles the "Press ENTER to start/stop" logic internally
+        text = record_and_transcribe(mode="manual")
         print(f"✓ Transcription: '{text}'")
         
         if len(text) > 0:
@@ -50,22 +62,10 @@ def run_tests():
     if violations:
         print(f"❌ FAIL: Found LLM references: {violations}")
     else:
-        print("✓ PASS: No LLM/OpenRouter detected")
-        print("✓ Whisper-only architecture confirmed")
+        print(" PASS: No LLM/OpenRouter detected")
+        print(" Whisper-only architecture confirmed")
     
-    # Summary
-    print("\n" + "="*60)
-    print("PHASE 1 COMPLETION CHECKLIST")
-    print("="*60)
-    print("□ Speech converts correctly to text")
-    print("□ Works for everyday conversation")
-    print("□ Output is readable and stable")
-    print("□ Handles different accents")
-    print("□ Works with audio >30 seconds")
-    print("□ Stable with background noise")
-    print("✓ Whisper is the only AI model used")
-    print("✓ No OpenRouter / No LLM")
-    print("\nManually verify remaining items with real-world testing.")
+   
 
 
 if __name__ == "__main__":

@@ -54,23 +54,28 @@ def record_manual():
     input()
     print("🎤 Recording... (Press ENTER to stop)")
     
-    q = []
-    def cb(indata, f, t, s): q.append(indata.copy())
+    stop_event = Event()
     
-    # Start stream manually to ensure no context manager blocking issues
-    stream = sd.InputStream(samplerate=Config.SAMPLE_RATE, 
-                            channels=Config.CHANNELS, 
-                            callback=cb)
-    stream.start()
+    # Thread to wait for Enter key
+    def wait_for_enter():
+        input()
+        stop_event.set()
+        
+    import threading
+    t = threading.Thread(target=wait_for_enter)
+    t.start()
     
-    try:
-        input() # Wait for stop signal
-    finally:
-        stream.stop()
-        stream.close()
+    audio_chunks = []
+    
+    # Record in small chunks (0.1s) until stop is pressed
+    # This keeps the main thread responsive and avoids "stream.stop()" hangs
+    with sd.InputStream(samplerate=Config.SAMPLE_RATE, channels=Config.CHANNELS) as stream:
+        while not stop_event.is_set():
+            data, overflow = stream.read(int(Config.SAMPLE_RATE * 0.1)) # Read 0.1s
+            audio_chunks.append(data)
     
     print("✓ Recording stopped")
-    return np.concatenate(q) if q else np.array([])
+    return np.concatenate(audio_chunks) if audio_chunks else np.array([])
 
 def record_auto(silence_dur=Config.SILENCE_DURATION, 
                 threshold=Config.SILENCE_THRESHOLD, 

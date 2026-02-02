@@ -28,3 +28,4 @@ python-dotenv
 customtkinter
 Pillow
 packaging
+gradio

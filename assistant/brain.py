@@ -17,13 +17,17 @@ You are a smart and friendly AI Voice Assistant.
 - You also have access to this specific employee database if asked: {json.dumps(EMPLOYEES)}
 """
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def get_response(user_text):
     """
     Sends text to OpenRouter (Mistral) and returns the response.
     """
-    api_key = "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"
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        return "I need an OpenRouter API key to think. Please set it in your environment."
+        return "I need an OpenRouter API key to think. Please set it in your .env file."
 
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",

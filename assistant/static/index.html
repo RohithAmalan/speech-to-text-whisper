@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>AI Voice Assistant</h1>
+            <p>Your intelligent companion</p>
+        </header>
+
+        <!-- Main Interaction Area -->
+        <main>
+            <div class="mic-container">
+                <div class="mic-ring"></div>
+                <div class="mic-ring"></div>
+                <button id="recordBtn" class="mic-button">
+                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="status" class="status-text">Tap to Speak</div>
+        </main>
+
+        <!-- Chat History -->
+        <section class="chat-history" id="chatHistory">
+            <!-- Messages will be injected here -->
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

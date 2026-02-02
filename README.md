@@ -61,5 +61,35 @@ Convert human speech to accurate plain text using Whisper ASR.
 ### 🚀 Quick Start (ASR Tool Only)
 To run just the transcription tool without the AI assistant:
 ```bash
-python3 whisper/speech_to_text.py
+### 🧠 AI Architecture
+
+Here are the 3 specific AI models used in this project:
+
+#### 1. OpenAI Whisper (The Ear 👂)
+- **Function**: Converts Audio to Text.
+- **Type**: Speech Recognition Model (ASR).
+- **File**: `assistant/api.py`
+```python
+model = whisper.load_model("base")  # Loads the model
+...
+model.transcribe(input_audio_path)  # Uses the model
+```
+
+#### 2. Meta Llama 3 (The Brain 🧠)
+- **Function**: Understands the question and writes the answer.
+- **Type**: Large Language Model (LLM).
+- **File**: `assistant/brain.py`
+```python
+client.chat.completions.create(
+    model="meta-llama/llama-3-8b-instruct", ...
+)
+```
+
+#### 3. Google TTS (The Mouth 🗣️)
+- **Function**: Converts Text to Audio.
+- **Type**: Text-to-Speech Engine.
+- **File**: `assistant/api.py`
+```python
+tts = gTTS(text=ai_text, lang='en') # Generates audio
+tts.save(output_audio_path)
 ```
