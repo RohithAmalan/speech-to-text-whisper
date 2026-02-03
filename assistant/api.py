@@ -9,6 +9,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from gtts import gTTS
 import contextlib
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configuration
 RECORDINGS_DIR = "recordings"
@@ -20,7 +23,8 @@ model = None
 async def lifespan(app: FastAPI):
     global model
     print("Loading Whisper model...")
-    model = whisper.load_model("base")
+    model_name = os.getenv("WHISPER_MODEL", "base")
+    model = whisper.load_model(model_name)
     print("✓ Model ready")
     
     # Cleanup recordings on startup

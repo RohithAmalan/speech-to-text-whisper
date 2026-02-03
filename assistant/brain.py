@@ -2,24 +2,21 @@ import os
 import json
 from openai import OpenAI
 
-# Mock Data
-EMPLOYEES = [
-    {"id": "1223", "name": "John Doe", "role": "Senior Engineer", "department": "AI Research"},
-    {"id": "1224", "name": "Jane Smith", "role": "Product Manager", "department": "Design"},
-    {"id": "1225", "name": "Bob Wilson", "role": "Intern", "department": "Coffee Operations"},
-]
+# Mock Data Removed - Using Database
+import database
 
-# System Prompt
-SYSTEM_PROMPT = f"""
+# Base System Prompt
+BASE_SYSTEM_PROMPT = """
 You are a smart and friendly AI Voice Assistant.
 - You can help with general questions, coding, creative writing, or just chatting.
 - Keep your answers concise (1-3 sentences) because you are speaking them out loud.
-- You also have access to this specific employee database if asked: {json.dumps(EMPLOYEES)}
 """
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+import datetime
 
 def get_response(user_text):
     """
@@ -30,15 +27,27 @@ def get_response(user_text):
         return "I need an OpenRouter API key to think. Please set it in your .env file."
 
     client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url=os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1"),
         api_key=api_key,
     )
     
+    # Get dynamic date and time
+    now = datetime.datetime.now()
+    current_time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    day_of_week = now.strftime("%A")
+
+    # Fetch live data from MongoDB
+    employees = database.get_all_employees()
+
+    # Inject into context
+    dynamic_system_prompt = f"{BASE_SYSTEM_PROMPT}\n\nCurrent Date and Time: {current_time_str} ({day_of_week}).\n"
+    dynamic_system_prompt += f"You have access to this live employee database: {json.dumps(employees)}"
+    
     try:
         completion = client.chat.completions.create(
-            model="meta-llama/llama-3-8b-instruct", # Llama 3 8B Instruct (Fast & Concise)
+            model=os.getenv("LLM_MODEL", "meta-llama/llama-3-8b-instruct"),
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": dynamic_system_prompt},
                 {"role": "user", "content": user_text},
             ]
         )
