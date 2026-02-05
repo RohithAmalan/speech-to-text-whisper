@@ -5,7 +5,7 @@ from threading import Event
 class Config:
     SAMPLE_RATE = 16000
     CHANNELS = 1
-    MODEL_TYPE = "base"
+    MODEL_TYPE = "turbo"
     SILENCE_THRESHOLD = 0.01
     SILENCE_DURATION = 2.0
     MAX_RECORD_DURATION = 60
@@ -17,7 +17,11 @@ RECORDINGS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "recor
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
 print(f"Loading Whisper model ({Config.MODEL_TYPE})...")
-model = whisper.load_model(Config.MODEL_TYPE)
+try:
+    model = whisper.load_model(Config.MODEL_TYPE)
+except Exception as e:
+    print(f"Failed to load specific model '{Config.MODEL_TYPE}', falling back to 'base'. Error: {e}")
+    model = whisper.load_model("base")
 print("✓ Model ready")
 
 def save_and_transcribe(audio, fs=Config.SAMPLE_RATE):
