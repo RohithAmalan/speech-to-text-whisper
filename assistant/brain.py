@@ -3,7 +3,7 @@ import json
 from openai import OpenAI
 
 # Mock Data Removed - Using Database
-import database
+from . import database
 
 # Base System Prompt
 BASE_SYSTEM_PROMPT = """
@@ -17,10 +17,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import datetime
+import pytz
 
 def get_response(user_text):
     """
-    Sends text to OpenRouter (Mistral) and returns the response.
+    Sends text to OpenRouter (using Llama 3 by default) and returns the response.
     """
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
@@ -31,21 +32,27 @@ def get_response(user_text):
         api_key=api_key,
     )
     
-    # Get dynamic date and time
+    # Get dynamic date and time (Local & UTC)
     now = datetime.datetime.now()
-    current_time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    local_time_str = now.strftime("%Y-%m-%d %H:%M:%S")
     day_of_week = now.strftime("%A")
+    
+    # UTC Time for World Clock calculations
+    utc_now = datetime.datetime.now(pytz.utc)
+    utc_time_str = utc_now.strftime("%H:%M")
 
     # Fetch live data from MongoDB
     employees = database.get_all_employees()
 
     # Inject into context
-    dynamic_system_prompt = f"{BASE_SYSTEM_PROMPT}\n\nCurrent Date and Time: {current_time_str} ({day_of_week}).\n"
+    dynamic_system_prompt = f"{BASE_SYSTEM_PROMPT}\n"
+    dynamic_system_prompt += f"Current Local Date and Time: {local_time_str} ({day_of_week}).\n"
+    dynamic_system_prompt += f"Current UTC Time: {utc_time_str} (Use this to calculate time for other cities).\n"
     dynamic_system_prompt += f"You have access to this live employee database: {json.dumps(employees)}"
     
     try:
         completion = client.chat.completions.create(
-            model=os.getenv("LLM_MODEL", "meta-llama/llama-3-8b-instruct"),
+            model=os.getenv("LLM_MODEL", "qwen/qwen-2.5-7b-instruct"),
             messages=[
                 {"role": "system", "content": dynamic_system_prompt},
                 {"role": "user", "content": user_text},
@@ -57,4 +64,5 @@ def get_response(user_text):
 
 if __name__ == "__main__":
     # Test
-    print(get_response("Who is employee 1223?"))
+    # print(get_response("Who is employee 1223?"))
+    print(get_response("What time is it in New York right now?"))

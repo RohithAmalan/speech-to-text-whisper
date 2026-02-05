@@ -2,7 +2,7 @@ import os
 import time
 import shutil
 import whisper
-import brain
+from . import brain
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from gtts import gTTS
 import contextlib
 from dotenv import load_dotenv
+import edge_tts
 
 load_dotenv()
 
@@ -23,8 +24,14 @@ model = None
 async def lifespan(app: FastAPI):
     global model
     print("Loading Whisper model...")
-    model_name = os.getenv("WHISPER_MODEL", "base")
-    model = whisper.load_model(model_name)
+    # Default changed to 'turbo' (Large V3 Turbo)
+    model_name = os.getenv("WHISPER_MODEL", "turbo")
+    try:
+        model = whisper.load_model(model_name)
+    except Exception as e:
+        print(f"Failed to load specific model '{model_name}', falling back to 'base'. Error: {e}")
+        model = whisper.load_model("base")
+        
     print("✓ Model ready")
     
     # Cleanup recordings on startup
@@ -61,8 +68,7 @@ async def chat_endpoint(audio: UploadFile = File(...)):
             
         # 2. Transcribe
         print(f"Transcribing: {input_audio_path}")
-        # Whisper handles webm/mp3/wav usually, but if issues arise we might need ffmpeg conversion
-        # user has ffmpeg likely since they ran whisper before
+        # Turbo is multilingual by default no need for explicit English if we want support 99+ langs
         transcription_res = model.transcribe(input_audio_path, fp16=False)
         user_text = transcription_res["text"].strip()
         print(f"User said: {user_text}")
@@ -80,8 +86,19 @@ async def chat_endpoint(audio: UploadFile = File(...)):
         output_filename = f"reply_{timestamp}.mp3"
         output_audio_path = os.path.join(output_dir, output_filename)
         
-        tts = gTTS(text=ai_text, lang='en')
-        tts.save(output_audio_path)
+        # Try Edge TTS First
+        try:
+            print("Generating audio with Edge TTS...")
+            # Using a high-quality multilingual or English voice
+            voice = "en-US-ChristopherNeural" 
+            communicate = edge_tts.Communicate(ai_text, voice)
+            await communicate.save(output_audio_path)
+            
+        except Exception as e:
+            print(f"Edge TTS failed: {e}. Falling back to gTTS.")
+            print("Generating audio with Google TTS...")
+            tts = gTTS(text=ai_text, lang='en')
+            tts.save(output_audio_path)
         
         # Return URL relative to static mount
         audio_url = f"/recordings/outputs/{output_filename}"
@@ -100,4 +117,4 @@ async def chat_endpoint(audio: UploadFile = File(...)):
 # Mount recordings to serve audio back
 app.mount("/recordings", StaticFiles(directory=RECORDINGS_DIR), name="recordings")
 # Mount the frontend (root will be added below)
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/", StaticFiles(directory="assistant/static", html=True), name="static")

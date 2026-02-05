@@ -2,16 +2,22 @@
 # Pure ASR dependencies - NO LLM libraries
 
 # Core ASR
-openai-whisper==20231117
+# Core ASR
+openai-whisper  # Get latest for turbo support
+
+# TTS
+edge-tts
 
 # Audio processing
-sounddevice==0.4.6
-numpy==1.24.3
-scipy==1.11.3
+# Audio processing
+sounddevice
+numpy
+scipy
 
 # PyTorch (required by Whisper)
-torch==2.1.0
-torchaudio==2.1.0
+# PyTorch (required by Whisper)
+torch
+torchaudio
 
 # Additional audio format support
 pydub==0.25.1
@@ -30,3 +36,4 @@ Pillow
 packaging
 gradio
 pymongo
+pytz
