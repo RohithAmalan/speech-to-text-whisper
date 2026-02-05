@@ -3,7 +3,7 @@ import json
 from openai import OpenAI
 
 # Mock Data Removed - Using Database
-from . import database
+# from . import database
 
 # Base System Prompt
 BASE_SYSTEM_PROMPT = """
@@ -41,14 +41,13 @@ def get_response(user_text):
     utc_now = datetime.datetime.now(pytz.utc)
     utc_time_str = utc_now.strftime("%H:%M")
 
-    # Fetch live data from MongoDB
-    employees = database.get_all_employees()
-
     # Inject into context
     dynamic_system_prompt = f"{BASE_SYSTEM_PROMPT}\n"
     dynamic_system_prompt += f"Current Local Date and Time: {local_time_str} ({day_of_week}).\n"
     dynamic_system_prompt += f"Current UTC Time: {utc_time_str} (Use this to calculate time for other cities).\n"
-    dynamic_system_prompt += f"You have access to this live employee database: {json.dumps(employees)}"
+    
+    # Database check removed per user request
+    # dynamic_system_prompt += f"You have access to this live employee database: {json.dumps(employees)}"
     
     try:
         completion = client.chat.completions.create(
