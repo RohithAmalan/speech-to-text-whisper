@@ -2,15 +2,18 @@
 import whisper, sounddevice as sd, numpy as np, scipy.io.wavfile as wav, os, time
 from threading import Event
 
+from dotenv import load_dotenv
+load_dotenv()
+
 class Config:
-    SAMPLE_RATE = 16000
-    CHANNELS = 1
-    MODEL_TYPE = "turbo"
-    SILENCE_THRESHOLD = 0.01
-    SILENCE_DURATION = 2.0
-    MAX_RECORD_DURATION = 60
-    DEFAULT_DURATION = 5
-    CHUNK_DURATION = 0.5  # For manual/auto loops
+    SAMPLE_RATE = int(os.getenv("SAMPLE_RATE", 16000))
+    CHANNELS = int(os.getenv("CHANNELS", 1))
+    MODEL_TYPE = os.getenv("WHISPER_MODEL", "turbo")
+    SILENCE_THRESHOLD = float(os.getenv("SILENCE_THRESHOLD", 0.01))
+    SILENCE_DURATION = float(os.getenv("SILENCE_DURATION", 2.0))
+    MAX_RECORD_DURATION = int(os.getenv("MAX_RECORD_DURATION", 60))
+    DEFAULT_DURATION = int(os.getenv("DEFAULT_DURATION", 5))
+    CHUNK_DURATION = float(os.getenv("CHUNK_DURATION", 0.5))
 
 # Configuration
 RECORDINGS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "recordings")
@@ -33,8 +36,16 @@ def save_and_transcribe(audio, fs=Config.SAMPLE_RATE):
     audio_flat = audio.flatten().astype(np.float32)
     
     res = model.transcribe(audio_flat, fp16=False)
+    text = res["text"].strip()
+    
+    # Filter Hallucinations
+    hallucinations = ["Thank you.", "You're welcome.", "Bye.", "Amara.org", "Subtitle by"]
+    if any(h.lower() in text.lower() for h in hallucinations) or len(text) < 2:
+        print(f"⚠️  Ignoring hallucination/noise: '{text}'")
+        return ""
+        
     print(f"Language: {res['language']}")
-    return res["text"].strip()
+    return text
 
 def record_stream(stop_condition_func, **kwargs):
     q = []

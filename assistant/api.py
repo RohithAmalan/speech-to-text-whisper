@@ -90,7 +90,7 @@ async def chat_endpoint(audio: UploadFile = File(...)):
         try:
             print("Generating audio with Edge TTS...")
             # Using a high-quality multilingual or English voice
-            voice = "en-US-ChristopherNeural" 
+            voice = os.getenv("EDGE_TTS_VOICE", "en-US-ChristopherNeural") 
             communicate = edge_tts.Communicate(ai_text, voice)
             await communicate.save(output_audio_path)
             

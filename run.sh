@@ -8,5 +8,5 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 # Start the server
-echo "Running on http://127.0.0.1:8000"
-uvicorn assistant.api:app --reload
+echo "Running on http://127.0.0.1:8002"
+uvicorn assistant.api:app --reload --port 8002
