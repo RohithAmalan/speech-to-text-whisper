@@ -1,95 +1,64 @@
-# 🎤 Voice-to-Voice Assistant
-**Phase 2: Intelligent Assistant**
 
-This project has evolved into a full Voice-to-Voice assistant that listens, thinks (using Mistral AI), and speaks back to you.
+# 🎙️ Local AI Voice Assistant (with Hybrid RAG)
 
-## 🚀 Quick Start (Voice Assistant)
+A powerful, low-latency voice assistant that runs primarily on your local machine using **Ollama (Llama 3)**, **Whisper (Speech-to-Text)**, and a **Custom TF-IDF Vector Store** for instant knowledge retrieval.
 
-### 1. Prerequisites
-You need an **OpenRouter API Key** to power the brain.
-1.  Get a key from [OpenRouter](https://openrouter.ai/).
-2.  Export it in your terminal:
+## 🚀 Features
+- **Local Intelligence:** Uses Ollama + Llama 3 for 100% privacy and speed.
+- **Hybrid RAG:** 
+    - **Instant:** Queries local docs using TF-IDF (e.g., "Tell me about Client A").
+    - **Smart:** Queries remote MongoDB for complex math (e.g., "Top 5 Clients").
+- **Voice I/O:** Whisper for hearing, Edge-TTS for speaking.
+- **Reliable:** Falls back to local knowledge if the internet/database is down.
+
+## 📦 Installation
+
+1.  **Install Python Dependencies:**
     ```bash
-    export OPENROUTER_API_KEY="sk-or-your-key-here"
+    pip install -r requirements.txt
     ```
 
-### 2. Install Requirements
-If you haven't already:
+2.  **Install Ollama:**
+    - Download from [ollama.com](https://ollama.com).
+    - Pull the model: `ollama pull llama3.1`
+
+3.  **Setup Environment:**
+    - Create a `.env` file in `assistant/.env`:
+    ```ini
+    MONGO_URI="mongodb://..."
+    LLM_BASE_URL="http://localhost:11434/v1"
+    LLM_API_KEY="ollama"
+    LLM_MODEL="llama3.1"
+    ```
+
+## 🧠 Knowledge Base (RAG) Setup
+
+Before running the assistant, you must "teach" it your data. Run this script whenever your database changes significantly:
+
 ```bash
-pip install -r requirements.txt
+python3 assistant/ingest.py
 ```
+*This fetches data from MongoDB and saves a specialized, fast search index to your disk.*
 
-### 3. Run the Assistant
+## ▶️ Running the Assistant
+
+Simply run the startup script:
+
 ```bash
-python3 assistant/main.py
+./run.sh
 ```
 
-## 🏗️ Architecture (3-Module)
+**Commands to Try:**
+- *"Tell me about Client A"* (Uses Local RAG - Instant)
+- *"What is invoice #1005?"* (Uses Local RAG - Instant)
+- *"Who are my top 5 clients?"* (Uses Live DB - Requires Internet)
+- *"What time is it?"* (General Knowledge)
 
-The assistant is split into three clean modules in the `assistant/` directory:
+## 🛠️ Troubleshooting
 
-1.  **`brain.py`** 🧠
-    -   **Role**: Intelligence.
-    -   **Tech**: OpenRouter (Mistral Small) via `openai` client.
-    -   **Context**: Knows specific employee data (mock database).
+**"Connection Refused" Error:**
+- This means the remote MongoDB server is down or blocking your IP.
+- **Solution:** You can still use the assistant! RAG queries (specific facts) will still work perfectly using the cached local data. Only "Live" queries (counting/sorting) will fail.
 
-2.  **`speaker.py`** 🔊
-    -   **Role**: Speech Synthesis (TTS).
-    -   **Tech**: Native macOS `say` command (offline, zero-latency).
-
-3.  **`main.py`** 🎼
-    -   **Role**: Orchestrator.
-    -   **Loop**: Listens (Whisper) -> Thinks (Brain) -> Speaks (Speaker).
-
-## 🔮 Capabilities
-- **Chat**: Talk normally to the AI.
-- **Data Lookup**: Ask about employees (e.g., *"Who is employee 1223?"*).
-- **Voice Interaction**: Entirely hands-free loop.
-
----
-
-## 🎤 Sspeech-to-text-foundation/
-├── whisper_app/speech_to_text.py      # Core ASR implementation
-├── whisper_app/test_transcription.py  # Verification suite
-Convert human speech to accurate plain text using Whisper ASR.
-
-### 🎯 Project Goals
-- ✅ Solid Automatic Speech Recognition (ASR)
-- ✅ Microphone input support
-- ✅ Audio file transcription (WAV, MP3)
-
-### 🚀 Quick Start (ASR Tool Only)
-To run just the transcription tool without the AI assistant:
-```bash
-### 🧠 AI Architecture
-
-Here are the 3 specific AI models used in this project:
-
-#### 1. OpenAI Whisper (The Ear 👂)
-- **Function**: Converts Audio to Text.
-- **Type**: Speech Recognition Model (ASR).
-- **File**: `assistant/api.py`
-```python
-model = whisper.load_model("base")  # Loads the model
-...
-model.transcribe(input_audio_path)  # Uses the model
-```
-
-#### 2. Meta Llama 3 (The Brain 🧠)
-- **Function**: Understands the question and writes the answer.
-- **Type**: Large Language Model (LLM).
-- **File**: `assistant/brain.py`
-```python
-client.chat.completions.create(
-    model="meta-llama/llama-3-8b-instruct", ...
-)
-```
-
-#### 3. Google TTS (The Mouth 🗣️)
-- **Function**: Converts Text to Audio.
-- **Type**: Text-to-Speech Engine.
-- **File**: `assistant/api.py`
-```python
-tts = gTTS(text=ai_text, lang='en') # Generates audio
-tts.save(output_audio_path)
-```
+**"Brain Freeze":**
+- If the assistant goes silent, check `ollama serve` is running in another tab.

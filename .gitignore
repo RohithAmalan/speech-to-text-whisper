@@ -64,3 +64,7 @@ htmlcov/
 # Recordings
 recordings/
 assistant/recordings/
+
+# RAG Knowledge Base (Generated Locally)
+assistant/knowledge_store/
+assistant/chroma_db/
